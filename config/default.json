@@ -1,0 +1,48 @@
+{
+  "jwt": {
+    "options": {
+      "expiresIn": "3d"
+    },
+    "longOptions": {
+      "expiresIn": "30d"
+    }
+  },
+  "redis": {
+    "host": "127.0.0.1",
+    "port": 6379,
+    "username": "default",
+    "prefix": "launch-dev#",
+    "db": 0
+  },
+  "uploadDir": "/opt/uploads/",
+  "webHost": "https://www.envolvepool.com",
+  "oauth": {
+    "github": {
+      "clientId": "b02759d40af56d15400d",
+      "requestUrl": "https://github.com/login/oauth/authorize",
+      "connect": {
+        "clientId": "Ov23lizYpCccijT9bjrn"
+      }
+    },
+    "google": {
+      "clientId": "155395404655-6th04fd1s8u7efhm78k37enijo1kvslh.apps.googleusercontent.com",
+      "requestUrl": "https://accounts.google.com/o/oauth2/v2/auth",
+      "redirectUri": "http://localhost:3000/v1/auth/google/callback"
+    },
+    "discord": {
+      "clientId": "1201457637179543662",
+      "requestUrl": "https://discord.com/api/oauth2/authorize",
+      "redirectUri": "http://localhost:3000/connect-media?type=discord"
+    },
+    "linkedin": {
+      "clientId": "86z1bj6lamywyz",
+      "requestUrl": "https://www.linkedin.com/oauth/v2/authorization",
+      "redirectUri": "http://localhost:3000/v1/auth/linkedin/callback"
+    },
+    "twitter": {
+      "clientId": "ZUl0T3pEVEZpWE5JZ3cxTDZBbUk6MTpjaQ",
+      "requestUrl": "https://twitter.com/i/oauth2/authorize",
+      "redirectUri": "http://localhost:3000/v1/auth/twitter/callback"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  db:
+    image: 'postgres:14-alpine' # PGPASSWORD=aA123456 psql -h localhost -p 5432 -U launch_pool_admin -d launch_pool
+    container_name: postgres_for_launch_pool
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: launch_pool_admin
+      POSTGRES_PASSWORD: aA123456
+      POSTGRES_DB: launch_pool
+  cache:
+    image: 'redis:7.2'
+    container_name: redis_for_launch_pool
+    ports:
+      - '6379:6379'

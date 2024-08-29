@@ -1,0 +1,182 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "postgresql"
+  // url          = env("DATABASE_URL")
+  url          = "postgresql://launch_pool_admin:aA123456@localhost:5432/launch_pool"
+  relationMode = "prisma"
+}
+
+model User {
+  id           String     @id @default(uuid()) @db.Uuid
+  uid          Int        @default(autoincrement())
+  email        String?    @unique @db.VarChar(100)
+  name         String?    @unique @db.VarChar(100)
+  username     String?    @unique @db.VarChar(50)
+  nickname     String?    @db.VarChar(100)
+  password     String
+  avatar       String
+  role         Role       @default(USER)
+  status       UserStatus @default(UNACTIVATED)
+  registerType String     @default("register") @db.VarChar(50)
+  inviteCode   String     @default("ABCDEFGHIJ") @db.VarChar(20)
+  invitedBy    String?    @db.VarChar(40)
+
+  thirdUser ThirdUser[]
+
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+}
+
+enum Role {
+  ADMIN
+  USER
+  ORGANIZATION
+  CONTENT
+}
+
+enum UserStatus {
+  ACTIVATED
+  UNACTIVATED
+}
+
+model ThirdUser {
+  id             String  @id @default(uuid()) @db.Uuid
+  userId         String  @db.Uuid
+  thirdUserId    String  @db.VarChar(50)
+  thirdUsername  String? @db.VarChar(50)
+  thirdPartyName String  @db.VarChar(50)
+  info           Json    @default("{}")
+
+  createdAt DateTime @default(now()) @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, thirdPartyName])
+}
+
+model LaunchProject {
+  id                 String   @id @default(uuid()) @db.Uuid
+  name               String   @db.VarChar(120)
+  lowStakingTime     Int
+  lowStakingAmount   Int
+  currentStakings    Int      @default(0)
+  totalAirdropAmount Int
+  airdropRatio       Float
+  launchPadID        Int?     @unique
+  chainID            Int?
+  fuelStart          DateTime @db.Timestamptz
+  allocationStart    DateTime @db.Timestamptz
+  airdropStart       DateTime @db.Timestamptz
+  airdropEnd         DateTime @db.Timestamptz
+  links              Json
+  about              Json
+  video              Json
+  keyMtrics          Json
+  tractions          Json
+  status             String   @default("pending") @db.VarChar(20)
+  txHash             String?  @unique @db.VarChar(255)
+  proof              Json?
+  rawData            Json
+
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+
+  fuels           Fuel[]
+  userFuelTargets UserFuelTarget[]
+  userFuelStakes  UserFuelStake[]
+}
+
+model LaunchWaitList {
+  id              Int    @id @default(autoincrement())
+  email           String @db.VarChar(100)
+  launchProjectId String @db.Uuid
+
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+}
+
+model UserLaunchProject {
+  id              String  @id @default(uuid()) @db.Uuid
+  userId          String  @db.Uuid
+  launchProjectId String  @db.Uuid
+  totalFuel       Int     @default(0)
+  inviteCount     Int     @default(0)
+  invitedBy       String? @db.Uuid
+  inviteCode      String  @db.VarChar(20)
+
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+
+  @@unique([userId, launchProjectId])
+  @@index([userId])
+  @@index([launchProjectId])
+}
+
+enum FuelType {
+  JOIN_DISCORD
+  FOLLOW_TWITTER
+  RETWEET_TWITTER
+  INVITATION
+  STAKE_TOKEN
+}
+
+model Fuel {
+  id       String   @id @default(uuid()) @db.Uuid
+  name     String   @db.VarChar(255)
+  type     FuelType
+  extra    Json?
+  reward   Int
+  sequence Int
+
+  launchProjectId String           @db.Uuid
+  launchProject   LaunchProject    @relation(fields: [launchProjectId], references: [id])
+  userFuelTargets UserFuelTarget[]
+
+  @@index([launchProjectId])
+}
+
+model UserFuelTarget {
+  id              String    @id @default(uuid()) @db.Uuid
+  userId          String    @db.Uuid
+  launchProjectId String    @db.Uuid
+  fuelId          String    @db.Uuid
+  type            FuelType
+  progress        Int[]
+  completed       Boolean   @default(false)
+  claimed         Boolean   @default(false)
+  completedTime   DateTime? @db.Timestamptz
+  claimedTime     DateTime? @db.Timestamptz
+
+  // user           User           @relation(fields: [userId], references: [id])
+  launchProject LaunchProject @relation(fields: [launchProjectId], references: [id])
+  fuel          Fuel          @relation(fields: [fuelId], references: [id])
+
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+
+  @@index([userId])
+  @@index([launchProjectId])
+  @@index([fuelId])
+}
+
+model UserFuelStake {
+  id              String  @id @default(uuid()) @db.Uuid
+  userId          String? @db.Uuid
+  userAddress     String  @db.VarChar(128)
+  launchProjectId String  @db.Uuid
+  launchPadId     Int
+  duration        Int
+  txHash          String  @unique @db.VarChar(255)
+  index           Int
+  amount          Decimal @db.Decimal(36, 18)
+  fuel            Int     @default(0)
+  status          String  @default("stake") @db.VarChar(20)
+
+  launchProject LaunchProject @relation(fields: [launchProjectId], references: [id])
+
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+}
